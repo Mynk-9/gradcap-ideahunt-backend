@@ -6,6 +6,7 @@ const cors = require('cors');
 
 const ideasRoutes = require('./routes/idea.routes');
 const userRoutes = require('./routes/user.routes');
+const loginRoutes = require('./routes/login.routes');
 
 mongoose.connect('mongodb://localhost:27017/gradcap-ideahunt').then(
    () => {
@@ -30,8 +31,17 @@ app.use(express.urlencoded({ extended: true }));
 // routes
 app.use('/ideas', ideasRoutes);
 app.use('/user', userRoutes);
+app.use('/login', loginRoutes);
 
 // handle 404
 app.use((req, res) => res.status(404).send());
+
+// testing
+// const userUtils = require('./utilities/user.utilities');
+// const asyncWrapper = async () => {
+//    let xx = await userUtils.userIdGen('mayank mathur');
+//    console.log(xx);
+// };
+// asyncWrapper();
 
 module.exports = app;
