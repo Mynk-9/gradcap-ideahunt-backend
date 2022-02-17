@@ -38,4 +38,32 @@ const oAuthPipeline = async (req, next) => {
    }
 };
 
+const tokenCheck = (req, res, next) => {
+   try {
+      const { authorization: token } = req.headers;
+
+      if (!token) {
+         res.status(403).send({ error: 'Unauthorized - missing token' });
+         return;
+      }
+
+      const userData = jwt.verify(token, GOOGLE_OAUTH_SECRET, {
+         algorithms: ['HS256'],
+      });
+
+      // error if token already expired
+      if (userData.expires_at <= new Date().getTime()) {
+         res.status(403).send({ error: 'Token expired' });
+         return;
+      }
+
+      req.userData = userData;
+      next();
+   } catch (err) {
+      res.status(403).send({
+         error: 'Unexpected error in token verification.',
+      });
+   }
+};
+
 module.exports = { tokenCheck, oAuthPipeline };
