@@ -42,13 +42,64 @@ const ideasMapper = ideas => {
 const getPaginated = (req, res) => {
    const pageNumber = parseInt(req.query.page) || 1;
    const nPerPage = parseInt(req.query.perPage) || 10;
+   const sort = String(req.query.sort).toLowerCase() || 'featured';
+   let pipeline = [];
 
-   Idea.find({})
-      .skip(pageNumber > 0 ? (pageNumber - 1) * nPerPage : 0)
-      .limit(nPerPage)
-      .lean()
-      .populate('user')
-      .exec()
+   if (sort === 'newest')
+      pipeline = [
+         {
+            $sort: {
+               createdAt: -1,
+            },
+         },
+      ];
+   else if (sort === 'most liked' || sort === 'most+liked')
+      pipeline = [
+         {
+            $addFields: {
+               likesCount: {
+                  $size: '$likes',
+               },
+            },
+         },
+         {
+            $sort: {
+               likesCount: -1,
+               createdAt: -1,
+            },
+         },
+      ];
+   else
+      pipeline = [
+         {
+            $sort: {
+               featured: -1,
+               createdAt: -1,
+            },
+         },
+      ];
+
+   pipeline.push(
+      {
+         $skip: pageNumber > 0 ? (pageNumber - 1) * nPerPage : 0,
+      },
+      { $limit: nPerPage },
+      {
+         $lookup: {
+            from: 'users',
+            localField: 'user',
+            foreignField: '_id',
+            as: 'user',
+         },
+      },
+      {
+         $unwind: {
+            path: '$user',
+         },
+      }
+   );
+
+   Idea.aggregate(pipeline)
       .then(ideas => {
          res.status(200).send({
             count: ideas.length,
