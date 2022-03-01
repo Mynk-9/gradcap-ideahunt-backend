@@ -5,6 +5,7 @@ const controllers = require('./../controllers/idea.controllers');
 // GET /ideas
 router.get('/', controllers.getPaginated);
 router.get('/count', controllers.getCount);
+router.get('/explore', controllers.explore);
 router.get('/:ideaId', controllers.getIdeaDetails);
 router.get('/:ideaId/like', tokenCheck, controllers.isLiked);
 router.get('/user/:userId', controllers.userIdeas);

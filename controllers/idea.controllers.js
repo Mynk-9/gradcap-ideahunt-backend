@@ -189,7 +189,34 @@ const getIdeaDetails = (req, res) => {
       });
 };
 
-const gets = { getPaginated, getCount, isLiked, userIdeas, getIdeaDetails };
+const explore = (req, res) => {
+   Idea.find({})
+      .lean()
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .populate('user')
+      .exec()
+      .then(ideas => {
+         res.status(200).send({
+            count: ideas.length,
+            ideas: ideasMapper(ideas),
+         });
+      })
+      .catch(error => {
+         res.status(500).send({
+            Error: String(error),
+         });
+      });
+};
+
+const gets = {
+   getPaginated,
+   getCount,
+   isLiked,
+   userIdeas,
+   getIdeaDetails,
+   explore,
+};
 
 ////////////////
 ///// post /////
