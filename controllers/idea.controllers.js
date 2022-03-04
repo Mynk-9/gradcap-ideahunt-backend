@@ -268,12 +268,12 @@ const like = async (req, res) => {
    if (likeStatus === true)
       Idea.findByIdAndUpdate(
          ideaId,
-         { $push: { likes: userId } },
-         { upsert: true }
+         { $addToSet: { likes: userId } },
+         { upsert: true, new: true }
       )
          .lean()
          .exec()
-         .then(() => res.status(201).send({ likeStatus }))
+         .then(({ likes }) => res.status(201).send({ likes: likes.length }))
          .catch(error => {
             console.log(error);
             res.sendStatus(500);
@@ -282,11 +282,11 @@ const like = async (req, res) => {
       Idea.findByIdAndUpdate(
          ideaId,
          { $pull: { likes: userId } },
-         { upsert: true }
+         { upsert: true, new: true }
       )
          .lean()
          .exec()
-         .then(() => res.status(201).send({ likeStatus }))
+         .then(({ likes }) => res.status(201).send({ likes: likes.length }))
          .catch(error => {
             console.log(error);
             res.sendStatus(500);
