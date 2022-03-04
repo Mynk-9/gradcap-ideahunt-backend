@@ -160,12 +160,12 @@ const commentLike = (req, res) => {
    if (likeStatus === true)
       Comment.findByIdAndUpdate(
          commentId,
-         { $push: { likes: userId } },
-         { upsert: true }
+         { $addToSet: { likes: userId } },
+         { upsert: true, new: true }
       )
          .lean()
          .exec()
-         .then(() => res.status(201).send({ likeStatus }))
+         .then(({ likes }) => res.status(201).send({ likes: likes.length }))
          .catch(error => {
             console.log(error);
             res.sendStatus(500);
@@ -174,11 +174,11 @@ const commentLike = (req, res) => {
       Comment.findByIdAndUpdate(
          commentId,
          { $pull: { likes: userId } },
-         { upsert: true }
+         { upsert: true, new: true }
       )
          .lean()
          .exec()
-         .then(() => res.status(201).send({ likeStatus }))
+         .then(({ likes }) => res.status(201).send({ likes: likes.length }))
          .catch(error => {
             console.log(error);
             res.sendStatus(500);
